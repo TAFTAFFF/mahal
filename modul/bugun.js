@@ -12,7 +12,7 @@ const DOSEMELER = [
 ];
 
 export default {
-  id: 'bugun', baslik: 'Bugün',
+  veri: ['gorevler'], id: 'bugun', baslik: 'Bugün',
   async ekran(kap, _, ctx) {
     const t = bugunStr();
     const gorevler = (await api.liste('gorevler')).filter(g => !g.tamam && g.tarih && g.tarih <= t);

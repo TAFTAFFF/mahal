@@ -66,21 +66,24 @@ function kabuk() {
 function guncelleDurum() {
   {
     const n = api.bekleyen(), e = document.getElementById('esit'); if (!e) return;
-    e.textContent = n ? `${n} bekliyor` : (!navigator.onLine ? 'çevrimdışı' : '');
-    e.className = 'esit' + (n || !navigator.onLine ? ' var' : '');
+    e.textContent = n ? `${n} bekliyor` : (!navigator.onLine ? 'çevrimdışı' : (api.yukleniyor() ? 'eşitleniyor…' : ''));
+    e.className = 'esit' + (n || !navigator.onLine || api.yukleniyor() ? ' var' : '');
   }
 }
 
 let sira = 0;
-async function yonlendir() {
+async function yonlendir(sessiz = false) {
   const ekran = document.getElementById('ekran'); if (!ekran) return;
   const [yolu, sorguStr = ''] = (location.hash.slice(2) || 'bugun').split('?');
   const [id, ...arg] = yolu.split('/');
   const mod = MODULLER.find(m => m.id === id) || bugun;
   const bu = ++sira;
+  const kayY = window.scrollY, kayE = ekran.scrollTop;
+  // Ağ beklenirken ekran boş kalmasın: 150 ms içinde veri gelmezse yükleniyor göstergesi
+  const yt = sessiz ? 0 : setTimeout(() => { if (bu === sira) ekran.innerHTML = '<p class="bos yukleniyor">Yükleniyor…</p>'; }, 150);
   const ctx = {
     sorgu: new URLSearchParams(sorguStr), ortaklar: api.ortaklar(), kullanici: api.durum().oturum,
-    projeler: await api.liste('projeler'), rehber: await api.liste('rehber'),
+    projeler: null, rehber: null,
     baslik(t, geri) {
       document.getElementById('baslik').textContent = t;
       const g = document.getElementById('geri'); g.hidden = !geri; if (geri) g.href = geri;
@@ -88,15 +91,38 @@ async function yonlendir() {
     menu: MODULLER.filter(m => m.menu),
     git: h => { location.hash = h; }, yenile: () => yonlendir(),
   };
+  // Bu ekranın ihtiyaç duyduğu tüm koleksiyonlar paralel istenir
+  [ctx.projeler, ctx.rehber] = await Promise.all(['projeler', 'rehber', ...(mod.veri || [])].map(k => api.liste(k)));
+  clearTimeout(yt);
   if (bu !== sira) return;
-  ctx.baslik(mod.baslik); ekran.scrollTop = 0; window.scrollTo(0, 0);
+  ctx.baslik(mod.baslik); if (!sessiz) { ekran.scrollTop = 0; window.scrollTo(0, 0); }
   document.querySelectorAll('.alt a').forEach(a => a.classList.toggle('secili', a.dataset.nav === (ALT.some(x => x[0] === mod.id) ? mod.id : 'diger')));
   try { await mod.ekran(ekran, arg, ctx); } catch (e) { console.error(e); ekran.innerHTML = `<p class="bos">Bir sorun oluştu: ${esc(e.message)}</p>`; }
+  if (sessiz && bu === sira) { ekran.scrollTop = kayE; window.scrollTo(0, kayY); }
 }
+
+// Arka plan yenilemesi: veri sunucudan değişmiş geldiyse açık ekranı sessizce yeniden çiz.
+// Kullanıcı yazıyorsa ya da form açıksa ertele.
+let bekleyenCizim = 0;
+function yazilirMi() {
+  const ekran = document.getElementById('ekran'); if (!ekran) return false;
+  const a = document.activeElement;
+  if (a && ekran.contains(a) && (/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || a.isContentEditable)) return true;
+  if (ekran.querySelector('form')) return true;
+  return [...ekran.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]):not([type=hidden]),textarea')].some(x => x.value);
+}
+function yenidenCiz() {
+  clearTimeout(bekleyenCizim); bekleyenCizim = 0;
+  if (!api.durum().oturum || !document.getElementById('ekran')) return;
+  if (yazilirMi()) { bekleyenCizim = setTimeout(yenidenCiz, 2000); return; }
+  yonlendir(true);
+}
+window.addEventListener('mahal:veri', () => { clearTimeout(bekleyenCizim); bekleyenCizim = setTimeout(yenidenCiz, 50); });
+window.addEventListener('hashchange', () => { clearTimeout(bekleyenCizim); bekleyenCizim = 0; });
 
 function basla() {
   if (!api.durum().oturum) return girisEkrani();
-  kabuk(); yonlendir(); api.esitle();
+  kabuk(); yonlendir(); api.esitle(); api.onYukle();
 }
 window.addEventListener('hashchange', () => api.durum().oturum && yonlendir());
 window.addEventListener('mahal-durum', () => { if (!api.durum().oturum && document.getElementById('ekran')) { girisEkrani(); bildir('Oturum kapandı'); } });

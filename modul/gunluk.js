@@ -20,7 +20,7 @@ const PANEL = `<div class="alan konum-panel"><label>Zaman, konum ve hava (otomat
   <div class="sira" id="ke"></div><small class="atif">Adres: © OpenStreetMap katkıcıları · hava: Open-Meteo</small></div>`;
 
 export default {
-  id: 'gunluk', baslik: 'Şantiye günlüğü',
+  veri: ['gunluk'], id: 'gunluk', baslik: 'Şantiye günlüğü',
   async ekran(kap, [a, b], ctx) {
     const liste = await api.liste('gunluk');
     if (a === 'yeni' || (a && b === 'duzenle')) return form(kap, a === 'yeni' ? null : liste.find(x => x.id === a), ctx);

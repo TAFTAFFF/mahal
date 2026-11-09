@@ -19,7 +19,7 @@ export const SEMA = [
 ];
 
 export default {
-  id: 'projeler', baslik: 'Projeler',
+  veri: ['gunluk', 'gorevler', 'odemeler'], id: 'projeler', baslik: 'Projeler',
   async ekran(kap, [a, b], ctx) {
     if (a === 'yeni') {
       ctx.baslik('Yeni proje', '#/projeler');

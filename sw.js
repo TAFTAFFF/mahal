@@ -1,5 +1,5 @@
 // Kabuk önbelleği. Uygulama dosyaları değişince SURUM'u artırın.
-const SURUM = 'mahal-v3';
+const SURUM = 'mahal-v4';
 const KABUK = ['./', 'index.html', 'style.css', 'app.js', 'api.js', 'config.js', 'crud.js', 'demo-veri.js', 'form.js', 'hava.js', 'konum.js', 'logo.js', 'pdf.js', 'ui.js', 'util.js',
   'modul/bugun.js', 'modul/diger.js', 'modul/gorevler.js', 'modul/gunluk.js', 'modul/odemeler.js', 'modul/ornekler.js', 'modul/projeler.js', 'modul/rehber.js',
   'lib/jspdf.umd.min.js', 'lib/Roboto_400Regular.ttf', 'lib/Roboto_700Bold.ttf',

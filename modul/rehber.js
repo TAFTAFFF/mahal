@@ -36,8 +36,8 @@ function kendiHazirla(l) {
   return l.map(k => ({ id: k.id, kaynak: 'mahal', ad: k.ad, alan: k.is || '', ilce: k.ilce || '', adres: k.adres || '', tel: k.telefon || '', not: k.not || '', puan: k.puan, projeler: k.projeler, kartvizit: k.kartvizit,
     _a: norm(`${k.ad} ${k.is || ''} ${k.ilce || ''} ${k.adres || ''} ${k.not || ''}`) }));
 }
-export async function veriYukle(ctx) {
-  const [pazar, notlar, fav] = await Promise.all([api.pazarYukle(), api.liste('pazarnot'), api.liste('favoriler')]);
+export async function veriYukle(ctx, tolerans = false) {
+  const [pazar, notlar, fav] = await Promise.all([tolerans ? api.pazarYukle().catch(() => []) : api.pazarYukle(), api.liste('pazarnot'), api.liste('favoriler')]);
   const nm = new Map(notlar.map(n => [n.id, n]));
   const hepsi = [...kendiHazirla(ctx.rehber), ...pazarHazirla(pazar)];
   for (const k of hepsi) {
@@ -72,10 +72,16 @@ function satir(k, v, kul) {
 }
 
 export default {
-  id: 'rehber', baslik: 'Rehber',
+  veri: ['pazarnot', 'favoriler'], id: 'rehber', baslik: 'Rehber',
   async ekran(kap, [a, b], ctx) {
     if (a === 'yeni') return yeniKisi(kap, ctx);
-    const v = await veriYukle(ctx);
+    if (!(await api.pazarHazirMi())) kap.innerHTML = '<p class="bos yukleniyor">Rehber ilk kez indiriliyor…</p>';
+    let v;
+    try { v = await veriYukle(ctx); } catch (e) {
+      kap.innerHTML = `<p class="bos">Rehber yüklenemedi: ${esc(e.message || 'bilinmeyen hata')}</p><p class="bos"><button class="dugme" id="td" type="button">Tekrar dene</button></p>`;
+      kap.querySelector('#td').addEventListener('click', () => ctx.yenile());
+      return;
+    }
     if (a && b === 'duzenle') {
       const k = ctx.rehber.find(x => x.id === a); ctx.baslik('Kişiyi düzenle', `#/rehber/${a}`);
       return formEkrani(kap, { kol: 'rehber', sema: semaAlanli(v), kayit: k, ctx, geri: '#/rehber', sonra: () => `#/rehber/${a}` });
@@ -230,7 +236,7 @@ async function detay(kap, k, v, ctx) {
 // ---- yeni kişi ----
 async function yeniKisi(kap, ctx) {
   ctx.baslik('Yeni kişi', '#/rehber');
-  const v = await veriYukle(ctx);
+  const v = await veriYukle(ctx, true);
   const cp = 'contacts' in navigator && 'ContactsManager' in window;
   const ek = cp ? '<button type="button" class="ikincil" id="cp">Telefon rehberinden seç</button>' : '';
   const f = formEkrani(kap, {

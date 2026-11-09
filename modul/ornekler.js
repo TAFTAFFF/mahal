@@ -26,7 +26,7 @@ async function hepsi() {
 }
 
 export default {
-  id: 'ornekler', baslik: 'Örnekler', menu: { ad: 'Örnek kütüphanesi', acik: 'Mersin\'den gerçek örnekler' },
+  veri: ['ornekler'], id: 'ornekler', baslik: 'Örnekler', menu: { ad: 'Örnek kütüphanesi', acik: 'Mersin\'den gerçek örnekler' },
   async ekran(kap, [a, b], ctx) {
     const l = await hepsi();
     if (a === 'yeni') { ctx.baslik('Yeni örnek', '#/ornekler'); return formEkrani(kap, { kol: 'ornekler', sema: SEMA, ctx, geri: '#/ornekler' }); }

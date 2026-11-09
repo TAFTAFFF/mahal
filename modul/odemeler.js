@@ -15,7 +15,7 @@ const sema = ctx => [
 const SOZ = [{ ad: 'tutar', etiket: 'Sözleşme tutarı (₺)', tur: 'sayi', zorunlu: true }];
 
 export default {
-  id: 'odemeler', baslik: 'Ödemeler', menu: { ad: 'Ödeme / hakediş', acik: 'Sözleşme, tahsilat, usta ödemeleri' },
+  veri: ['odemeler'], id: 'odemeler', baslik: 'Ödemeler', menu: { ad: 'Ödeme / hakediş', acik: 'Sözleşme, tahsilat, usta ödemeleri' },
   async ekran(kap, [a], ctx) {
     const hepsi = await api.liste('odemeler');
     const pid = ctx.sorgu.get('proje') || ctx.projeler[0]?.id || '';

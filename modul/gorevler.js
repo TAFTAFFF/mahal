@@ -13,7 +13,7 @@ const SEMA = [
 ];
 
 export default {
-  id: 'gorevler', baslik: 'Yapılacaklar', menu: { ad: 'Yapılacaklar', acik: 'Görevler ve tarihler' },
+  veri: ['gorevler'], id: 'gorevler', baslik: 'Yapılacaklar', menu: { ad: 'Yapılacaklar', acik: 'Görevler ve tarihler' },
   async ekran(kap, [a], ctx) {
     const liste = await api.liste('gorevler');
     if (a === 'yeni') { ctx.baslik('Yeni görev', '#/gorevler'); return formEkrani(kap, { kol: 'gorevler', sema: SEMA, kayit: { projeId: ctx.sorgu.get('proje') || '', sorumlu: ctx.kullanici?.ad }, ctx, geri: '#/gorevler' }); }
