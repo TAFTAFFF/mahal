@@ -1,0 +1,14 @@
+{
+  "name": "Mahal Yapı Stüdyosu",
+  "short_name": "Mahal",
+  "lang": "tr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#24352B",
+  "theme_color": "#24352B",
+  "icons": [
+    { "src": "ikon/ikon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "ikon/ikon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
